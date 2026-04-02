@@ -56,6 +56,13 @@ HERD: dict[str, dict] = {
         "openclaw_agent": "organizer",
         "think": "综合判断、收敛共识、找到最优解",
     },
+    "scheduler": {
+        "name": "调度崽",
+        "color": "#00E5FF",
+        "platform": "vm",
+        "openclaw_agent": "scheduler",
+        "think": "定时任务、事件驱动、异步协调、不遗漏任何一件事",
+    },
     # Windows 本地 agent（openclaw agent --agent main --local）
     "assistant": {
         "name": "助手崽",

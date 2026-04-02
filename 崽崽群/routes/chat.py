@@ -21,26 +21,24 @@ router = APIRouter()
 
 
 def emit_evt(etype: str, data: dict) -> None:
-    """向 SSE 队列写事件（实时推送），同时写 JSONL 文件（持久化）"""
-    evt_file = active_proc.get("file")
+    """向 SSE 推送事件：写 JSONL 文件 → 文件轮询线程读取 → SSE 流"""
     obj = {"type": etype, "data": data}
 
-    # 实时推送：写入 asyncio 队列（线程安全，put_nowait 不阻塞事件循环）
-    from 崽崽群.state import event_q
+    # 获取活跃的事件文件（实验用，或新建临时文件供聊天用）
+    evt_file = active_proc.get("file")
+    if not evt_file:
+        evt_file = tempfile.mktemp(suffix=".jsonl")
+        Path(evt_file).touch()
+        active_proc["file"] = evt_file
+
+    # 写 JSONL 文件 → 文件轮询线程 → SSE 推送
     try:
-        event_q.put_nowait(obj)
+        with open(evt_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
     except Exception:
         pass
-
-    # 持久化：追加到 JSONL
-    if evt_file:
-        try:
-            with open(evt_file, "a", encoding="utf-8") as f:
-                f.write(json.dumps(obj, ensure_ascii=False) + "\n")
-                f.flush()
-                os.fsync(f.fileno())
-        except Exception:
-            pass
 
 
 def run_agent_chat(agent_id: str, msg_text: str, thinking: str = "high", timeout: int = 600) -> str:
@@ -86,13 +84,6 @@ async def chat(
         return {"status": "error", "reason": "没有有效的崽"}
 
     agent_list = sorted(agent_list)
-
-    # 初始化活跃的 JSONL 文件
-    evt_file = active_proc.get("file")
-    if not evt_file:
-        evt_file = tempfile.mktemp(suffix=".jsonl")
-        Path(evt_file).touch()
-        active_proc["file"] = evt_file
 
     now = datetime.now().strftime("%H:%M:%S")
 

@@ -17,19 +17,15 @@ from typing import TextIO
 
 from 崽崽群.agents import openclaw_run
 from 崽崽群.config import HERD, TODAY_D
-from 崽崽群.state import active_proc, AGENT_POOL, event_q
+from 崽崽群.state import active_proc, AGENT_POOL
 
 # ── JSONL 事件写入 ────────────────────────────────────────
 
 def emit(f: TextIO, etype: str, data: dict) -> None:
-    """向 JSONL 文件写入（供 SSE 推送）+ 尝试写入队列（仅对本进程有效）"""
+    """向 JSONL 文件写入，供 SSE 轮询推送"""
     obj = {"type": etype, "data": data}
     f.write(json.dumps(obj, ensure_ascii=False) + "\n")
     f.flush()
-    try:
-        event_q.put_nowait(obj)
-    except Exception:
-        pass
 
 
 # ── 实验四轮逻辑 ──────────────────────────────────────────
@@ -135,7 +131,7 @@ def run_experiment_file(question: str, out_path: str) -> None:
                 f"【问题】{question}\n\n"
                 f"【各崽崽的答案摘要】\n{sums}\n\n"
                 f"只输出以下格式（严格按格式）：\n"
-                f"VOTE:\nresearcher: +1\nsilijian: -1\ncoder: +1\norganizer: 0"
+                f"VOTE:\nresearcher: +1\nsilijian: 0\ncoder: +1\norganizer: +1\nscheduler: 0\nassistant: +1"
             )
             try:
                 raw = openclaw_run(vid, msg, thinking="high", timeout=300) or ""
@@ -145,7 +141,7 @@ def run_experiment_file(question: str, out_path: str) -> None:
             import re as re_module
             for line in raw.splitlines():
                 m = re_module.match(
-                    r"(researcher|silijian|coder|organizer|assistant)\s*[:=]\s*([+-]?\d)",
+                    r"(researcher|silijian|coder|organizer|scheduler|assistant)\s*[:=]\s*([+-]?\d)",
                     line,
                 )
                 if m:
