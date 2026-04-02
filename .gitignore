@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 崽崽群运行时文件
+*.jsonl
+*.log
+tmp*.txt
+tmp*.sh
+
+# 敏感配置
+.env
+.secrets/
+*.pem
+*.key
+
+# SSH / OpenClaw 本地数据（不上传）
+.ssh/
+.openclaw/
+.npm/
+node_modules/
+
+# 备份文件
+*_backup.py
+*_backup.html
+备份*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# 临时文件
+*.tmp
+*.temp
+AppData/Local/Temp/*

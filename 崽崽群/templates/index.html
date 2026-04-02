@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>崽崽群</title>
+<link href="https://fonts.googleapis.cn/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f7;
+    --bg-warm: #f7f5f2;
+    --card: #ffffff;
+    --border: #e8e4df;
+    --text: #1a1917;
+    --text-sub: #6b6560;
+    --text-muted: #a39e99;
+    --accent: #b07d4a;
+    --accent-light: #c9955a;
+    --success: #3d9970;
+    --error: #c94040;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 4px 6px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(240,220,200,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(220,200,180,0.30) 0%, transparent 60%);
+    color: var(--text);
+    font-family: "Noto Sans SC", "Inter", -apple-system, sans-serif;
+    line-height: 1.7;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ✓✓ 顶部 ✓✓ */
+  header {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .logo span { color: var(--text-sub); font-weight: 400; font-size: 13px; }
+
+  .mode-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-warm);
+    border-radius: 8px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .mode-tab {
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-sub);
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab.active {
+    background: var(--card);
+    color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-exp {
+    background: linear-gradient(135deg, #c9955a 0%, #96653a 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(176,125,74,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .btn-exp:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(176,125,74,0.4); }
+  .btn-exp:active { transform: translateY(0); }
+
+  /* ✓✓ 主内容 ✓✓ */
+  .main-area {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ✓✓ 崽崽选择栏 ✓✓ */
+  .agents-panel {
+    width: 160px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: rgba(255,255,255,0.6);
+    padding: 16px 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .agents-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .agent-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+    user-select: none;
+  }
+  .agent-item:hover { background: rgba(0,0,0,0.04); }
+  .agent-item.selected { background: rgba(0,0,0,0.06); }
+
+  .agent-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: box-shadow 0.2s;
+  }
+  .agent-item.thinking .agent-dot {
+    box-shadow: 0 0 0 3px currentColor;
+    animation: dotPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes dotPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .agent-check {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    font-size: 10px;
+    color: #fff;
+  }
+  .agent-item.selected .agent-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ✓✓ 聊天区 ✓✓ */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ✓✓ 消息列表（可滚动）✓✓ */
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #chat::-webkit-scrollbar { width: 4px; }
+  #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-muted);
+    padding: 40px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 4px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ✓✓ 消息气泡 ✓✓ */
+  .msg {
+    display: flex;
+    gap: 10px;
+    max-width: 80%;
+    animation: msgIn 0.25s ease-out;
+  }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.agent { align-self: flex-start; }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    align-self: flex-end;
+  }
+
+  .msg-bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    box-shadow: var(--shadow-sm);
+    font-size: 14px;
+    color: var(--text-sub);
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.user .msg-bubble {
+    background: linear-gradient(135deg, #c9955a 0%, #96653a 100%);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+  .msg.user .msg-time { text-align: right; }
+
+  /* ✓✓ 思考中 ✓✓ */
+  .thinking-row {
+    display: flex;
+    gap: 10px;
+    align-self: flex-start;
+    max-width: 60%;
+    animation: msgIn 0.25s ease-out;
+  }
+  .thinking-bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    box-shadow: var(--shadow-sm);
+  }
+  .tdots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: dotPulse 1.2s ease-in-out infinite;
+  }
+  .tdots span:nth-child(2) { animation-delay: 0.2s; }
+  .tdots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* ✓✓ 输入区（固定底部）✓✓ */
+  .compose {
+    border-top: 1px solid var(--border);
+    background: rgba(255,255,255,0.9);
+    padding: 12px 20px;
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .compose-input {
+    flex: 1;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    resize: none;
+    min-height: 42px;
+    max-height: 120px;
+    line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .compose-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(176,125,74,0.12);
+  }
+  .compose-input::placeholder { color: var(--text-muted); }
+
+  .btn-send {
+    background: linear-gradient(135deg, #c9955a 0%, #96653a 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(176,125,74,0.3);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .btn-send:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(176,125,74,0.4); }
+  .btn-send:active { transform: translateY(0); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ✓✓ 右侧边栏（实验进度）✓✓ */
+  #sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    background: rgba(255,255,255,0.5);
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #sidebar::-webkit-scrollbar { width: 3px; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  #progress-bar {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .phase-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .phase-dot.active {
+    background: var(--accent);
+    transform: scale(1.3);
+    box-shadow: 0 0 0 3px rgba(176,125,74,0.2);
+  }
+  .phase-dot.done { background: var(--success); }
+  .phase-line {
+    width: 18px; height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+  .phase-line.done { background: var(--success); }
+
+  #exp-phase-name {
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+  }
+  #exp-question {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: none;
+    margin-top: 6px;
+  }
+
+  /* ✓✓ 响应式 ✓✓ */
+  @media (max-width: 900px) {
+    .agents-panel { display: none; }
+    #sidebar { display: none; }
+    .msg { max-width: 90%; }
+  }
+  @media (max-width: 600px) {
+    header { padding: 10px 12px; }
+    #chat { padding: 12px; }
+    .compose { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">崽崽群 <span>/ 实时协作</span></div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-chat" onclick="switchMode('chat')">💬 聊天</button>
+    <button class="mode-tab" id="tab-exp" onclick="switchMode('exp')">🧪 正式实验</button>
+  </div>
+  <div class="header-right">
+    <input class="question-input" id="q-exp" placeholder="输入问题，开启正式实验..." style="display:none;background:white;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;color:var(--text);width:240px;">
+    <button class="btn-exp" id="btn-exp" style="display:none" onclick="startExp()">开始实验</button>
+  </div>
+</header>
+
+<div class="main-area">
+  <!-- 崽崽选择栏 -->
+  <div class="agents-panel">
+    <div class="agents-label">选崽崽</div>
+    <div id="agent-list"></div>
+  </div>
+
+  <!-- 聊天区 -->
+  <div class="chat-area">
+    <div id="chat">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">&#128054;</div>
+        <p>选中崽崽，输入消息开始聊天</p>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:4px;">可多选，同时对话多个崽</p>
+      </div>
+    </div>
+
+    <!-- 输入区 -->
+    <div class="compose">
+      <textarea class="compose-input" id="compose-input"
+        placeholder="输入消息，选中的崽崽会回复..."
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)"></textarea>
+      <button class="btn-send" id="btn-send" onclick="sendMessage()" title="发送">&#8593;</button>
+    </div>
+  </div>
+
+  <!-- 右侧边栏 -->
+  <div id="sidebar">
+    <div class="card">
+      <div class="card-title">实验进度</div>
+      <div id="progress-bar">
+        <div class="phase-dot" id="dot-0"></div>
+        <div class="phase-line" id="line-0"></div>
+        <div class="phase-dot" id="dot-1"></div>
+        <div class="phase-line" id="line-1"></div>
+        <div class="phase-dot" id="dot-2"></div>
+        <div class="phase-line" id="line-2"></div>
+        <div class="phase-dot" id="dot-3"></div>
+      </div>
+      <div id="exp-phase-name" style="color:var(--text-muted);font-size:12px;">空闲</div>
+      <div id="exp-question"></div>
+    </div>
+    <div class="card" style="flex:1;">
+      <div class="card-title">投票结果</div>
+      <div id="vote-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">最终报告</div>
+      <div id="final-report" style="font-size:12px;color:var(--text-muted);max-height:300px;overflow-y:auto;">
+        实验完成后显示...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const HERO_AGENTS = {
+  researcher:  { name: "研究崽", color: "#00BCD4", bg: "rgba(0,188,212,0.12)",  platform: "vm" },
+  silijian:   { name: "质疑崽", color: "#FFC107", bg: "rgba(255,193,7,0.12)",   platform: "vm" },
+  coder:      { name: "编码崽", color: "#4CAF50", bg: "rgba(76,175,80,0.12)",   platform: "vm" },
+  organizer:  { name: "整合崽", color: "#9C27B0", bg: "rgba(156,39,176,0.12)", platform: "vm" },
+  assistant:  { name: "助手崽", color: "#FF7043", bg: "rgba(255,112,67,0.12)",  platform: "win" },
+};
+
+const PHASE_NAMES = ["思考", "评论", "投票", "综合"];
+const PHASE_MAP = { round1: 0, round2: 1, round3: 2, round4: 3, done: 3 };
+
+let selectedAgents = new Set();
+let thinkingAgents = new Set();
+let currentMode = localStorage.getItem("mode") || "chat";
+let es = null;
+
+const chat = document.getElementById("chat");
+const emptyState = document.getElementById("empty-state");
+const composeInput = document.getElementById("compose-input");
+const btnSend = document.getElementById("btn-send");
+
+// ✓✓ 模式切换 ✓✓
+function switchMode(mode) {
+  currentMode = mode;
+  localStorage.setItem("mode", mode);
+  document.getElementById("tab-chat").classList.toggle("active", mode === "chat");
+  document.getElementById("tab-exp").classList.toggle("active", mode === "exp");
+  const expInput = document.getElementById("q-exp");
+  const btnExp = document.getElementById("btn-exp");
+  const sidebar = document.getElementById("sidebar");
+  expInput.style.display = mode === "exp" ? "block" : "none";
+  btnExp.style.display = mode === "exp" ? "block" : "none";
+  sidebar.style.display = mode === "exp" ? "flex" : "none";
+  if (mode === "chat") {
+    connectSSE();
+    composeInput.focus();
+  } else {
+    connectSSE();  // 切换到实验模式也要确保 SSE 已连接
+  }
+}
+
+// ✓✓ 构建崽崽列表 ✓✓
+function buildAgentList() {
+  const list = document.getElementById("agent-list");
+  list.innerHTML = "";
+  for (const [id, info] of Object.entries(HERO_AGENTS)) {
+    const item = document.createElement("div");
+    item.className = "agent-item";
+    item.dataset.id = id;
+    item.innerHTML = `
+      <div class="agent-dot" style="background:${info.color}"></div>
+      <span style="font-size:12px;color:${info.color}">${info.name}</span>
+      <div class="agent-check">${selectedAgents.has(id) ? "✓" : ""}</div>
+    `;
+    item.onclick = () => toggleAgent(id);
+    list.appendChild(item);
+  }
+}
+
+function toggleAgent(id) {
+  if (selectedAgents.has(id)) {
+    selectedAgents.delete(id);
+  } else {
+    selectedAgents.add(id);
+  }
+  updateAgentUI();
+}
+
+function updateAgentUI() {
+  for (const [id, info] of Object.entries(HERO_AGENTS)) {
+    const item = document.querySelector(`.agent-item[data-id="${id}"]`);
+    if (!item) continue;
+    item.classList.toggle("selected", selectedAgents.has(id));
+    item.classList.toggle("thinking", thinkingAgents.has(id));
+    item.querySelector(".agent-check").textContent = selectedAgents.has(id) ? "\u2713" : "";
+    item.querySelector(".agent-dot").style.background = info.color;
+  }
+  // Update placeholder
+  if (selectedAgents.size > 0) {
+    const names = [...selectedAgents].map(id => HERO_AGENTS[id].name).join("、");
+    composeInput.placeholder = `对 ${names} 说...`;
+  } else {
+    composeInput.placeholder = "输入消息，选中的崽崽会回复...";
+  }
+}
+
+// ✓✓ 进度条 ✓✓
+function setPhase(phase) {
+  const idx = PHASE_MAP[phase] ?? -1;
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById("dot-" + i);
+    const line = document.getElementById("line-" + i);
+    dot.classList.remove("active", "done");
+    if (i === idx) dot.classList.add("active");
+    if (i < idx) dot.classList.add("done");
+    if (line) { line.classList.remove("done"); if (i < idx) line.classList.add("done"); }
+  }
+  if (phase !== "idle" && phase !== "done") {
+    document.getElementById("exp-phase-name").textContent = PHASE_NAMES[idx] || phase;
+    document.getElementById("exp-phase-name").style.color = "var(--accent)";
+  } else if (phase === "done") {
+    document.getElementById("exp-phase-name").textContent = "完成 ✓";
+    document.getElementById("exp-phase-name").style.color = "var(--success)";
+  }
+}
+
+// ✓✓ 添加消息（新消息在顶部）✓✓
+function addMsg(type, data) {
+  if (emptyState) emptyState.style.display = "none";
+
+  let agentId = data.agent_id || "";
+  let agentName = data.agent_name || "";
+  let color = data.color || "#888";
+  let bg = `rgba(${hexToRgb(color)},0.1)`;
+  let text = data.text || "";
+  let time = data.time || "";
+
+  let el;
+  if (type === "thinking") {
+    thinkingAgents.add(agentId);
+    updateAgentUI();
+    el = document.createElement("div");
+    el.className = "thinking-row";
+    el.id = "thinking-" + agentId;
+    el.innerHTML = `
+      <div class="msg-avatar" style="background:${bg};color:${color};align-self:center;">${agentName[0]}</div>
+      <div class="thinking-bubble">
+        <div class="tdots"><span></span><span></span><span></span></div>
+        ${esc(text || "思考中...")}
+      </div>`;
+  } else {
+    thinkingAgents.delete(agentId);
+    updateAgentUI();
+    el = document.createElement("div");
+    el.className = "msg " + (type === "user" ? "user" : "agent");
+    const avatarEl = type === "user"
+      ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#c9955a,#96653a);color:#fff;align-self:center;">我</div>`
+      : `<div class="msg-avatar" style="background:${bg};color:${color};align-self:center;">${agentName[0]}</div>`;
+    el.innerHTML = `
+      ${avatarEl}
+      <div>
+        <div class="msg-bubble">${esc(text)}</div>
+        ${time ? `<div class="msg-time">${time}</div>` : ""}
+      </div>`;
+  }
+
+  // 新消息插到 empty-state 之后（顶部）
+  chat.insertBefore(el, emptyState ? emptyState.nextSibling : chat.firstChild);
+  chat.scrollTop = 0; // 保持在顶部
+  return el;
+}
+
+function removeThinking(agentId) {
+  thinkingAgents.delete(agentId);
+  updateAgentUI();
+  const el = document.getElementById("thinking-" + agentId);
+  if (el) el.remove();
+}
+
+// ✓✓ 发送消息 ✓✓
+function sendMessage() {
+  const text = composeInput.value.trim();
+  if (!text) return;
+  if (selectedAgents.size === 0) {
+    composeInput.placeholder = "请先选中要回复的崽崽！";
+    setTimeout(() => { composeInput.placeholder = "输入消息，选中的崽崽会回复..."; }, 2000);
+    return;
+  }
+
+  // @提及解析：自动选中被@的崽
+  const atPattern = /@(\w+)/g;
+  let match;
+  while ((match = atPattern.exec(text)) !== null) {
+    const mentioned = match[1];
+    if (HERO_AGENTS[mentioned] && !selectedAgents.has(mentioned)) {
+      selectedAgents.add(mentioned);
+    }
+  }
+  updateAgentUI();
+
+  btnSend.disabled = true;
+  composeInput.value = "";
+  composeInput.style.height = "auto";
+
+  // 15秒超时兜底，防止 SSE 断连后按钮永远卡住
+  const timeoutId = setTimeout(() => { btnSend.disabled = false; }, 15000);
+
+  // POST 到 /chat
+  fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "agents=" + encodeURIComponent([...selectedAgents].join(",")) + "&message=" + encodeURIComponent(text)
+  }).catch(err => {
+    console.error("chat error:", err);
+    clearTimeout(timeoutId);
+    btnSend.disabled = false;
+  });
+}
+
+// ✓✓ 正式实验 ✓✓
+function startExp() {
+  const q = document.getElementById("q-exp").value.trim() || "崽崽村下一步最值得做什么？";
+  const btnExp = document.getElementById("btn-exp");
+  btnExp.disabled = true;
+  btnExp.textContent = "实验中...";
+  fetch("/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "question=" + encodeURIComponent(q)
+  }).catch(err => console.error("exp error:", err));
+}
+
+// ✓✓ 键盘事件 ✓✓
+function handleKeyDown(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 120) + "px";
+}
+
+// ✓✓ SSE ✓✓
+function connectSSE() {
+  if (es) { es.close(); es = null; }
+  es = new EventSource("/events");
+
+  es.onerror = () => {
+    // 断开后自动重连（防递归）
+    setTimeout(() => { try { connectSSE(); } catch {} }, 2000);
+  };
+
+  function on(type, handler) {
+    es.addEventListener(type, e => {
+      try { handler(JSON.parse(e.data)); } catch (err) { console.error("SSE parse error", err); }
+    });
+  }
+
+  on("user_message", d => addMsg("user", d));
+  on("thinking", d => {
+    console.log("[SSE] thinking", d);
+    addMsg("thinking", d);
+  });
+  on("answer", d => {
+    console.log("[SSE] answer", d);
+    removeThinking(d.agent_id);  // 答案来时清除"思考中"气泡
+    addMsg("agent", d);
+  });
+  on("agent_response", d => {
+    console.log("[SSE] agent_response", d);
+    removeThinking(d.agent_id);
+    addMsg("agent", d);
+    btnSend.disabled = false;
+  });
+  on("answer_complete", d => {
+    console.log("[SSE] answer_complete", d);
+    removeThinking(d.agent_id);  // 双保险清除
+  });
+  on("comment", d => {
+    console.log("[SSE] comment", d);
+    removeThinking(d.agent_id);  // 评论来时也清除"阅读中"
+    addMsg("agent", d);
+  });
+  on("phase_change", d => {
+    // 换轮时清除残留的思考气泡
+    thinkingAgents.clear();
+    updateAgentUI();
+    document.querySelectorAll(".thinking-row").forEach(el => el.remove());
+    console.log("[SSE] phase_change", d);
+    setPhase(d.phase);
+    document.getElementById("exp-phase-name").textContent = d.name || d.text || d.phase;
+    document.getElementById("exp-question").textContent = d.text || "";
+    document.getElementById("exp-question").style.display = "block";
+  });
+  on("experiment_complete", d => {
+    // 清除所有还在思考状态的崽
+    thinkingAgents.clear();
+    updateAgentUI();
+    document.querySelectorAll(".thinking-row").forEach(el => el.remove());
+    setPhase("done");
+    const fr = document.getElementById("final-report");
+    fr.style.color = "var(--text)";
+    fr.textContent = d.report || "";
+    const btnExp = document.getElementById("btn-exp");
+    btnExp.disabled = false;
+    btnExp.textContent = "再次开始";
+  });
+  on("vote_complete", d => updateVotes(d.votes || {}));
+}
+
+// ✓✓ 投票 ✓✓
+function updateVotes(v) {
+  const vl = document.getElementById("vote-list");
+  vl.innerHTML = "";
+  for (const [id, info] of Object.entries(HERO_AGENTS)) {
+    const score = v[id] || 0;
+    vl.innerHTML += `
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:${info.color}">${info.name}</span>
+          <span style="color:${info.color};font-weight:600;">${score >= 0 ? "+" : ""}${score}</span>
+        </div>
+        <div style="height:4px;background:var(--bg-warm);border-radius:2px;margin-top:3px;">
+          <div style="height:100%;width:${Math.max(0, Math.abs(score) / Math.max(...Object.values(v).map(Math.abs), 1) * 100)}%;background:${info.color};border-radius:2px;transition:width 0.5s;"></div>
+        </div>
+      </div>`;
+  }
+}
+
+// ✓✓ 初始化恢复 ✓✓
+fetch("/state").then(r => r.json()).then(s => {
+  // 清除残留 thinking（上次实验异常退出时）
+  thinkingAgents.clear();
+  updateAgentUI();
+  document.querySelectorAll(".thinking-row").forEach(el => el.remove());
+
+  if (s.chat_history && s.chat_history.length > 0) {
+    for (const msg of s.chat_history) {
+      if (msg.from === "user") {
+        addMsg("user", { text: msg.text, time: msg.time });
+      } else {
+        addMsg("agent", {
+          agent_id: msg.from, agent_name: msg.agent_name, color: msg.color,
+          text: msg.text, time: msg.time
+        });
+      }
+    }
+  }
+  if (s.started && s.phase && s.phase !== "idle") {
+    switchMode("exp");  // 实验进行中，自动切换到实验模式
+    setPhase(s.phase);
+    document.getElementById("exp-question").textContent = s.question || "";
+    document.getElementById("exp-question").style.display = "block";
+    if (s.votes && s.votes.total) updateVotes(s.votes.total);
+    if (s.report) {
+      const fr = document.getElementById("final-report");
+      fr.style.color = "var(--text)";
+      fr.textContent = s.report;
+    }
+  } else {
+    switchMode(currentMode);  // 应用 localStorage 中的模式
+  }
+  connectSSE();
+}).catch(err => {
+  console.error("/state error:", err);
+  switchMode(currentMode);
+  connectSSE();
+});
+
+// ✓✓ 工具 ✓✓
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+function esc(s) {
+  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+buildAgentList();
+composeInput.focus();
+</script>
+</body>
+</html>
