@@ -15,8 +15,8 @@
 ## 环境变量
 
 ```bash
-# 必填：VM SSH 连接地址（ip 地址和用户名）
-export HERD_VM_SSH="fayi@172.17.26.221"
+# 必填：设置 HERD_VM_SSH 环境变量，格式：用户名@VM的SSH地址
+export HERD_VM_SSH="your_user@your_vm_ip"
 ```
 
 ## 快速启动
